@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+    <title>Identificación</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <style>
+        body {
+            background-color: rgb(166, 56, 56);
+            text-align: center;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        h1, p {
+            color: white;
+        }
+
+        input {
+            text-align: center;
+        }
+    </style>
+
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Votaciones</title>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="text-center mt-3 mb-3">Votaciones de Arstotzka 2077</h1>
+            <p>Esta es una simulación. No se usarán criptomonedas reales para la demostración del proyecto.</p>
+            <div class="card">
+                <div class="card-header"><strong>Ingrese sus datos para votar:</strong></div>
+                <div class="card-body">
+                    <form method="post" action="/identificacion">
+                        <div class="mb-3">
+                            <label for="nombre">Nombre</label>
+                            <input type="text" name="nombre" id="nombre" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="apellido">Apellido</label>
+                            <input type="text" name="apellido" id="apellido" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="dni">DNI</label>
+                            <input type="number" name="dni" id="dni" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="cuenta-metamask">Address de cuenta: <strong style="color:red;" id="mensaje-metamask">sin registrar</strong></label>
+                            <input readonly type="text" id="direccion-metamask" name="direccion-metamask" style="display:block;text-align:center;" class="form-control" required />
+                        </div>
+                        <div class="mb-3">
+                            <input onclick="conectarMetamask()" id="cuenta-metamask" type="button" value="Conectarse a Metamask">
+                        </div>
+                        <div class="mb-3">
+                            <input type="submit" name="submit_button" class="btn btn-danger" value="Enviar">
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </body>
+
+    <script>
+        let usuario = {};
+        const mensajeMetamask = document.getElementById("mensaje-metamask");
+
+        const conectarMetamask = async () => {
+            if (window.ethereum != undefined) {
+                const cuenta = await ethereum.request({method: "eth_requestAccounts"}).then(cuentas => cuentas[0]);
+                
+                mensajeMetamask.innerHTML = "registrado con éxito";
+                mensajeMetamask.style.color = "lightgreen";
+
+                const direccionMetamask = document.getElementById("direccion-metamask");
+                direccionMetamask.value = cuenta;
+                usuario.cuenta = cuenta;
+            } else {
+                mensajeMetamask.innerHTML = "es necesario instalar la extensión de Metamask y tener una cuenta creada";
+            }
+        };
+
+        const formulario = document.getElementsByTagName("form")[0];
+        formulario.addEventListener("submit", async evento => {
+            if (formulario.checkValidity() && direccionMetamask.value) {
+                usuario = await JSON.stringify({
+                    ...usuario,
+                    nombre: formulario.elements.nombre.value,
+                    apellido: formulario.elements.apellido.value,
+                    dni: formulario.elements.dni.value
+                });
+                
+                //Validar si ya existe en el smart contract
+                // si no existe seguir sino reenviar a /votacion sino a /finalizado
+
+                return sessionStorage.setItem("usuario", usuario);
+            };
+
+            evento.preventDefault();
+        });
+    </script>
+</html>
