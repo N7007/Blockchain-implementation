@@ -1,46 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
+
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Votación</title>
-    <script defer type="text/javascript" src="../logicaContrato.js"></script>
+    <title>Menú de votaciones</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #59000D;
+            color: #FFFFFF;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .card {
+            background-color: #800020;
+            color: #FFFFFF;
+            margin: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-img {
+            height: 40vh;
+            border-radius: 5px;
+            object-fit: contain;
+        }
+
+        .card-title {
+            font-size: 24px;
+            margin-top: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .btn-votar {
+            background-color: #8B0000;
+            color: #FFFFFF;
+            border: none;
+            width: 100%;
+        }
+    </style>
+    <script defer type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.2.7-rc.0/web3.min.js"></script>
+    <!-- <script defer type="text/javascript" src="/libs/@truffle/contract/browser-dist/truffle-contract.min.js"></script> -->
+    <script defer type="text/javascript" src="/js/logicaContrato.js"></script>
 </head>
+
 <body>
+    <div class="container p-3">
+        <h1 class="text-center ">Menú de votaciones</h1>
+        <div class="row" id="row-container"></div>
+    </div>
+    <script defer>        
+        let contratoVotacion;
 
-    <script>
-        let account;
-        const connectMetamask = async () => {
-            if(window.ethereum !== "undefined") {
-                const accounts = await ethereum.request({method: "eth_requestAccounts"});
-                account = accounts[0];
-                document.getElementById("accountArea").innerHTML = account;
+        document.addEventListener("DOMContentLoaded", async () => {
+            contratoVotacion = await conectarContrato();
+            const candidatos = await contratoVotacion.methods.getCandidatos().call();
+            const rowContainer = document.getElementById("row-container");
+
+            candidatos.forEach(candidato => {
+                const nombreImagen = candidato.nombre.toLowerCase().replace(" ", "_");
+
+                rowContainer.innerHTML += `
+                <div class="col-md-6 col-lg-4">
+                    <div class="card">
+                        <img src="/images/${nombreImagen}.png" alt="Imagen de ${candidato.nombre}" class="card-img">
+                        <h2 class="card-title">${candidato.nombre}</h2>
+                        <form action="#" method="POST">
+                            <input type="hidden" name="numeroCandidato" value="${candidato.numero}">
+                            <input type="submit" class="btn btn-votar" value="Emitir Voto"/>
+                        </form>
+                    </div>
+                </div>`;
+            });
+
+            const formularios = document.getElementsByTagName("form");
+
+            for (formulario of formularios) {
+                formulario.addEventListener("submit", async evento => {
+                    evento.preventDefault()
+                    const usuario = JSON.parse(sessionStorage.getItem("usuario"));
+                    const numeroCandidato = formulario.elements.numeroCandidato.value;
+                    
+                    const respuesta = await contratoVotacion.methods.registrarVotante(usuario.nombre, usuario.apellido, usuario.dni, numeroCandidato).send({ from: usuario.cuenta, gas: 6721975 }).then(recibo => recibo);
+
+                    await contratoVotacion.methods.buscarVotante(usuario.dni).call().then(console.log);
+                });
             }
-        }
-
-        //2- connect to smart contract
-        const connectContract = async () => {
-            const ABI = [
-                {
-                    "inputs": [],
-                    "name": "myCity",
-                    "outputs": [
-                        {
-                            "internalType": "string",
-                            "name": "",
-                            "type": "string"
-                        }
-                    ],
-                    "stateMutability": "view",
-                    "type": "function"
-                }
-            ];
-            const Address = "0x1DCabB8360c16728f0ce5e41BF58ec5eA1a5bA45";
-            window.web3 = await new Web3(window.ethereum);
-            window.contract = await new window.web3.eth.Contract( ABI, Address); 
-            document.getElementById("contractArea").innerHTML = "connected to smart contract";
-        }
+        })
+        
     </script>
 </body>
 </html>
