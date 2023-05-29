@@ -10,26 +10,29 @@ const validarUsuario = (req, res, next) => {
     if (!usuario) {
         res.status(401).redirect("/401");
     } else {
-        usuario = null;
         next();
     }
 };
 
-app.use(express.static("../public"));
+app.use(express.static(path.join(__dirname, "../public")));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
-app.get("/", (req, res) => {
-    res.sendFile(path.join(__dirname, "/pages/index.html"));
-});
 
 app.get("/finalizado", validarUsuario, (req, res) => {
     if (!usuario.haVotado) {
         res.redirect("/votacion");
     } else {
         usuario = null;
-        next(); 
+        next();
     }
+});
+
+app.get("/votacion", validarUsuario, (req, res) => {
+    res.send("ACÁ IRÍA EL COSO DE VOTAR")
+});
+
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, "/pages/index.html"));
 });
 
 app.get("/:nombrePagina", (req, res, next) => {

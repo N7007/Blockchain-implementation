@@ -1,22 +1,6 @@
 import('https://cdnjs.cloudflare.com/ajax/libs/web3/1.2.7-rc.0/web3.min.js')
   .then(() => {
-    const connectContract = async () => {
-        const ABI = [
-            {
-                "inputs": [],
-                "name": "myCity",
-                "outputs": [
-                    {
-                        "internalType": "string",
-                        "name": "",
-                        "type": "string"
-                    }
-                ],
-                "stateMutability": "view",
-                "type": "function"
-            }
-        ];
-        
+    const connectContract = async () => {        
         const contractAddress = "0x325f099568443B6971b85e4e93051c49bd635409";
         const contractABI = [
             {
