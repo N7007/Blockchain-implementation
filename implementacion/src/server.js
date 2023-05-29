@@ -46,9 +46,8 @@ app.get("/:nombrePagina", (req, res, next) => {
 });
 
 app.post("/identificacion", (req, res) => {
-    console.log(req.body);
     usuario = { ...req.body };
-    console.log(usuario);
+
     if (!usuario.haVotado) {
         res.redirect("/votacion");
     } else {

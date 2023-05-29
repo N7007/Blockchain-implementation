@@ -3,7 +3,7 @@ const conectarContrato = async () => {
 	
 	const web3 = new Web3("http://127.0.0.1:7545");
 	const abi = contratoVotacionJSON.abi;
-	const addressContrato = "0x89D53B382e1F9032C750d1a8D7F7Dd619fbA6C0f";
+	const addressContrato = "0xb1539F724CECB9562E0CD87c74D9cE8da158084B";
 	const contratoVotacion = new web3.eth.Contract(abi, addressContrato);
 	
 	return contratoVotacion;

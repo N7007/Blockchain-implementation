@@ -140,6 +140,7 @@
         };
         
         formulario.addEventListener("submit", async evento => {
+            evento.preventDefault();
             if (formulario.checkValidity() && usuario.cuenta) {                
                 const contratoVotacion = await conectarContrato();
                 
@@ -159,11 +160,13 @@
                 }
                 
                 if (votante) {
-                    formulario.elements.haVotado.value = true;    
+                    formulario.elements.haVotado.value = true;
                 } else {
                     usuario = await JSON.stringify(usuario);
                     sessionStorage.setItem("usuario", usuario);
                 }
+
+                formulario.submit();
             };
         });
     </script>

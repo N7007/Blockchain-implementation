@@ -48,13 +48,12 @@ contract SistemaVotacion {
 
     // Se registra al votante en la blockchain y se suma su voto al candidato elegido
     function registrarVotante(string memory _nombre, string memory _apellido, uint256 _dni, uint256 _numero_candidato) public returns (uint256) {
-        bytes32 hashDNI = keccak256(abi.encode(_dni));
-        string memory mensaje = string(abi.encodePacked("El votante ", hashDNI, " ha intentado emitir un voto a favor de un candidato no registrado."));
+        string memory mensaje = "Error: has intentado emitir un voto a favor de un candidato no registrado.";
         uint256 codigo_salida = 2;
 
         // Verificar si el votante no ha emitido un voto antes. Si fue así, cancelar la operación.
         if (buscarVotante(_dni)) {
-            mensaje = string(abi.encodePacked("Voto cancelado. El votante ", hashDNI, " ya ha emitido un voto previamente."));
+            mensaje = "Voto cancelado. Ya has emitido un voto previamente.";
             codigo_salida = 1; // Retorna 1 si ya había votado.
         } else {
             for (uint256 i = 0; i < candidatos.length; i++) {
@@ -62,7 +61,7 @@ contract SistemaVotacion {
                     votantes.push(Votante(_nombre, _apellido, _dni, candidatos[i].nombre));
                     candidatos[i].votos += 1;
 
-                    mensaje = string(abi.encodePacked("Voto satisfactorio. El votante ", hashDNI, "ha emitido un voto a favor de ", candidatos[i].nombre));
+                    mensaje = string(abi.encodePacked("Voto satisfactorio. Has emitido un voto a favor de ", candidatos[i].nombre));
                     codigo_salida = 0;
                     emit EnviarMensaje(mensaje);
                     return codigo_salida; // Retorna 0 si salió exitosamente.

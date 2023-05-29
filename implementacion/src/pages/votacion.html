@@ -14,8 +14,9 @@
             padding: 0;
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            justify-content: space-between;
             align-items: center;
+            flex-direction: column;
         }
 
         .card {
@@ -55,9 +56,10 @@
 </head>
 
 <body>
+    <div class="row w-100 p-3 pl-5 text-left bg-success d-none" id="contenedor-mensaje">hola</div>
     <div class="container p-3">
-        <h1 class="text-center ">Menú de votaciones</h1>
-        <div class="row" id="row-container"></div>
+        <h1 class="text-center">Menú de votaciones</h1>
+        <div class="row mb-5" id="row-container"></div>
     </div>
     <script defer>        
         let contratoVotacion;
@@ -87,13 +89,20 @@
 
             for (formulario of formularios) {
                 formulario.addEventListener("submit", async evento => {
-                    evento.preventDefault()
+                    evento.preventDefault();
+
                     const usuario = JSON.parse(sessionStorage.getItem("usuario"));
                     const numeroCandidato = formulario.elements.numeroCandidato.value;
                     
                     const respuesta = await contratoVotacion.methods.registrarVotante(usuario.nombre, usuario.apellido, usuario.dni, numeroCandidato).send({ from: usuario.cuenta, gas: 6721975 }).then(recibo => recibo);
+                    console.log(respuesta);
+                    const contenedorMensaje = document.getElementById("contenedor-mensaje");
+                    contenedorMensaje.classList.add("d-block");
+                    contenedorMensaje.innerHTML = respuesta.events.EnviarMensaje.returnValues.mensaje + "<br/>Redirigiendo en 4 segundos...";
 
-                    await contratoVotacion.methods.buscarVotante(usuario.dni).call().then(console.log);
+                    setTimeout(() => {
+                        formulario.submit();
+                    }, 4000)
                 });
             }
         })
