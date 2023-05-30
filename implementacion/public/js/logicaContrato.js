@@ -7,9 +7,4 @@ const conectarContrato = async () => {
 	const contratoVotacion = new web3.eth.Contract(abi, addressContrato);
 	
 	return contratoVotacion;
-
-	// const contratoVotacion = TruffleContract(contratoVotacionJSON);
-	
-	// contratoVotacion.setProvider(window.ethereum);
-	// return await contratoVotacion.deployed();
 };

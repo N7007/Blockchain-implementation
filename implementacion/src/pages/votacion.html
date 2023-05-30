@@ -32,6 +32,8 @@
             height: 40vh;
             border-radius: 5px;
             object-fit: contain;
+            object-position: bottom;
+            background-color: yellow;
         }
 
         .card-title {
@@ -50,18 +52,24 @@
             width: 100%;
         }
     </style>
-    <script defer type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.2.7-rc.0/web3.min.js"></script>
-    <!-- <script defer type="text/javascript" src="/libs/@truffle/contract/browser-dist/truffle-contract.min.js"></script> -->
+    <script defer type="text/javascript"
+        src="https://cdnjs.cloudflare.com/ajax/libs/web3/1.2.7-rc.0/web3.min.js"></script>
     <script defer type="text/javascript" src="/js/logicaContrato.js"></script>
 </head>
 
 <body>
-    <div class="row w-100 p-3 pl-5 text-left bg-success d-none" id="contenedor-mensaje">hola</div>
+    <div class="row w-100 p-3 pl-5 text-left d-none" style="font-weight:bold" id="contenedor-mensaje"></div>
     <div class="container p-3">
         <h1 class="text-center">Menú de votaciones</h1>
-        <div class="row mb-5" id="row-container"></div>
+        <div class="row" id="row-container"></div>
+        <p class="text-center">
+            La tecnología blockchain ofrece seguridad en la guarda de votaciones para candidaturas gracias a su
+            descentralización, inmutabilidad de los registros, transparencia, criptografía y consenso. Al distribuir la
+            información en una red de nodos y enlazar las transacciones de forma criptográfica, se evita la manipulación
+            de los votos, se permite la verificación independiente de los resultados y se garantiza la confiabilidad del
+            proceso electoral.</p>
     </div>
-    <script defer>        
+    <script defer>
         let contratoVotacion;
 
         document.addEventListener("DOMContentLoaded", async () => {
@@ -72,8 +80,9 @@
             candidatos.forEach(candidato => {
                 const nombreImagen = candidato.nombre.toLowerCase().replace(" ", "_");
 
-                rowContainer.innerHTML += `
-                <div class="col-md-6 col-lg-4">
+                const card = document.createElement("div");
+                card.classList.add("col-md-6", "col-lg-4");
+                card.innerHTML = `
                     <div class="card">
                         <img src="/images/${nombreImagen}.png" alt="Imagen de ${candidato.nombre}" class="card-img">
                         <h2 class="card-title">${candidato.nombre}</h2>
@@ -81,8 +90,9 @@
                             <input type="hidden" name="numeroCandidato" value="${candidato.numero}">
                             <input type="submit" class="btn btn-votar" value="Emitir Voto"/>
                         </form>
-                    </div>
-                </div>`;
+                    </div>`;
+
+                rowContainer.appendChild(card);
             });
 
             const formularios = document.getElementsByTagName("form");
@@ -90,23 +100,40 @@
             for (const formulario of formularios) {
                 formulario.addEventListener("submit", async evento => {
                     evento.preventDefault();
-                    
+
                     const usuario = JSON.parse(sessionStorage.getItem("usuario"));
                     const numeroCandidato = formulario.elements.numeroCandidato.value;
-                    
-                    const respuesta = await contratoVotacion.methods.registrarVotante(usuario.nombre, usuario.apellido, usuario.dni, numeroCandidato).send({ from: usuario.cuenta, gas: 6721975 }).then(recibo => recibo);
-                    
-                    const contenedorMensaje = document.getElementById("contenedor-mensaje");
-                    contenedorMensaje.classList.add("d-block");
-                    contenedorMensaje.innerHTML = respuesta.events.EnviarMensaje.returnValues.mensaje + "<br/>Redirigiendo en 4 segundos...";
 
-                    setTimeout(() => {
-                        formulario.submit();
-                    }, 4000)
+                    const contenedorMensaje = document.getElementById("contenedor-mensaje");
+                    let mensaje;
+
+                    try {
+                        const respuesta = await contratoVotacion.methods.registrarVotante(usuario.nombre, usuario.apellido, usuario.dni, numeroCandidato).send({ from: usuario.cuenta, gas: 6721975 }).then(recibo => recibo);
+
+                        contenedorMensaje.classList.add("bg-success", "fs-4");
+                        mensaje = respuesta.events.EnviarMensaje.returnValues.mensaje;
+                    } catch {
+                        contenedorMensaje.classList.add("bg-danger", "fs-3");
+                        mensaje = "Ha ocurrido un error. Recuerda verificar que tu cuenta utilizada haya sido generada por Ganache y no estar usando una cuenta auténtica de MetaMask, pues dichas cuentas no funcionan en nuestro programa."
+                    }
+
+                    contenedorMensaje.classList.add("d-block");
+                    contenedorMensaje.innerHTML = mensaje + `<br/>Redirigiendo en 10 segundos...`;
+
+                    let contador = 10;
+                    const intervalo = setInterval(() => {
+                        contador--;
+                        contenedorMensaje.innerHTML = mensaje + `<br/>Redirigiendo en ${contador} segundos...`;
+
+                        if (contador === 0) {
+                            clearInterval(intervalo);
+                            formulario.submit();
+                        }
+                    }, 1000);
                 });
             }
         })
-        
     </script>
 </body>
+
 </html>
