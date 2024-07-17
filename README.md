@@ -1,1 +1,1 @@
-Project on research and implementation of a Blockchain network, using Solidity, Ganache, NodeJS.
+Project on research and implementation of a Blockchain network, using Solidity, Ganache and NodeJS.
